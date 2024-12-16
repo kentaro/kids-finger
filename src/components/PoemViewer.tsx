@@ -2,7 +2,8 @@
 
 import type { Poem } from '@/lib/poems';
 import Image from 'next/image';
-import { useState, useRef, TouchEvent, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import type { TouchEvent } from 'react';
 import styles from './PoemViewer.module.css';
 import { Noto_Serif_JP } from 'next/font/google';
 import { useRouter } from 'next/navigation';
@@ -13,15 +14,14 @@ const notoSerifJP = Noto_Serif_JP({
   weight: ['400', '500'],
 });
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&h=600&fit=crop';
-
 export interface PoemViewerProps {
   poem: Poem;
   initialPage: number;
   totalPoems: number;
+  onPageChange: (page: number) => void;
 }
 
-export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewerProps) {
+export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange }: PoemViewerProps) {
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -36,15 +36,17 @@ export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' && currentPage > 1) {
+        onPageChange(currentPage - 1);
         router.push(`/poem/${currentPage - 1}`);
       } else if (e.key === 'ArrowLeft' && currentPage < totalPoems) {
+        onPageChange(currentPage + 1);
         router.push(`/poem/${currentPage + 1}`);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, totalPoems, router]);
+  }, [currentPage, totalPoems, router, onPageChange]);
 
   const handleTouchStart = (e: TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -67,9 +69,11 @@ export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewer
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentPage > 1) {
         // 左スワイプ → 前のページ
+        onPageChange(currentPage - 1);
         router.push(`/poem/${currentPage - 1}`);
       } else if (diff < 0 && currentPage < totalPoems) {
         // 右スワイプ → 次のページ
+        onPageChange(currentPage + 1);
         router.push(`/poem/${currentPage + 1}`);
       }
     }
@@ -78,12 +82,14 @@ export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewer
 
   const handlePrevPage = () => {
     if (currentPage < totalPoems) {
+      onPageChange(currentPage + 1);
       router.push(`/poem/${currentPage + 1}`);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage > 1) {
+      onPageChange(currentPage - 1);
       router.push(`/poem/${currentPage - 1}`);
     }
   };
@@ -113,19 +119,18 @@ export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewer
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [hideScrollIndicator]);
+  }, []);
 
   return (
-    <div 
+    <section 
       className={`${styles.container} ${notoSerifJP.className}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      role="region"
       aria-label="詩の表示エリア"
     >
       <div className={styles.imageContainer}>
         <Image
-          src={poem.image || FALLBACK_IMAGE}
+          src={`/kids-finger/images/poems/${currentPage}.jpg`}
           alt={poem.title || ''}
           fill
           className={styles.image}
@@ -170,6 +175,6 @@ export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewer
           />
         )}
       </>
-    </div>
+    </section>
   );
 } 

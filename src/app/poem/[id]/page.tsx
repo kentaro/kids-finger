@@ -18,11 +18,11 @@ export default async function Page() {
 // メタデータの設定
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const poems = await getAllPoems();
-  const page = parseInt(params.id, 10);
+  const page = Number.parseInt(params.id, 10);
   const poem = poems[page - 1];
 
   return {
     title: `${poem.title} - Web詩集`,
-    description: poem.excerpt || poem.title,
+    description: poem.title,
   };
 } 
