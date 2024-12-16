@@ -1,97 +1,175 @@
 'use client';
 
+import type { Poem } from '@/lib/poems';
 import Image from 'next/image';
-import { useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
+import { useState, useRef, TouchEvent, useEffect, useCallback } from 'react';
+import styles from './PoemViewer.module.css';
+import { Noto_Serif_JP } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import classNames from 'classnames';
 
-interface Poem {
-  id: string;
-  title: string;
-  content: string;
-  image: string;
-}
-
-interface PoemViewerProps {
-  poems: Poem[];
-  initialPage: number;
-}
+const notoSerifJP = Noto_Serif_JP({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+});
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&h=600&fit=crop';
 
-export default function PoemViewer({ poems, initialPage }: PoemViewerProps) {
+export interface PoemViewerProps {
+  poem: Poem;
+  initialPage: number;
+  totalPoems: number;
+}
+
+export default function PoemViewer({ poem, initialPage, totalPoems }: PoemViewerProps) {
   const router = useRouter();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [showNavButtons, setShowNavButtons] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const [hideScrollIndicator, setHideScrollIndicator] = useState(false);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage === 1) {
-      router.push('/');
-    } else {
-      router.push(`/poem/${newPage}`);
-    }
-    setCurrentPage(newPage);
+  useEffect(() => {
+    setCurrentPage(initialPage);
+  }, [initialPage]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' && currentPage > 1) {
+        router.push(`/poem/${currentPage - 1}`);
+      } else if (e.key === 'ArrowLeft' && currentPage < totalPoems) {
+        router.push(`/poem/${currentPage + 1}`);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, totalPoems, router]);
+
+  const handleTouchStart = (e: TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
   };
 
-  const handlePrevious = () => {
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!touchStart) return;
+
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+
+    // コンテンツが横スクロール可能で、まだ最後まで到達していない場合は
+    // ページ送りを行わない
+    if (contentRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+      if (!isAtEnd && scrollWidth > clientWidth) return;
+    }
+
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentPage > 1) {
+        // 左スワイプ → 前のページ
+        router.push(`/poem/${currentPage - 1}`);
+      } else if (diff < 0 && currentPage < totalPoems) {
+        // 右スワイプ → 次のページ
+        router.push(`/poem/${currentPage + 1}`);
+      }
+    }
+    setTouchStart(null);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage < totalPoems) {
+      router.push(`/poem/${currentPage + 1}`);
+    }
+  };
+
+  const handleNextPage = () => {
     if (currentPage > 1) {
-      handlePageChange(currentPage - 1);
+      router.push(`/poem/${currentPage - 1}`);
     }
   };
 
-  const handleNext = () => {
-    if (currentPage < poems.length) {
-      handlePageChange(currentPage + 1);
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setHideScrollIndicator(true);
+  }, []);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    if (contentRef.current) {
+      contentRef.current.scrollLeft += e.deltaY;
     }
-  };
+  }, []);
 
-  const handlers = useSwipeable({
-    onSwipedLeft: handleNext,
-    onSwipedRight: handlePrevious,
-  });
+  useEffect(() => {
+    const content = contentRef.current;
+    if (content) {
+      content.addEventListener('wheel', handleWheel, { passive: false });
+      return () => content.removeEventListener('wheel', handleWheel);
+    }
+  }, [handleWheel]);
 
-  const currentPoem = poems[currentPage - 1];
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHideScrollIndicator(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [hideScrollIndicator]);
 
   return (
     <div 
-      {...handlers}
-      className="w-full h-screen flex flex-col items-center justify-center p-4"
+      className={`${styles.container} ${notoSerifJP.className}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      role="region"
+      aria-label="詩の表示エリア"
     >
-      <div className="max-w-2xl w-full">
-        <div className="relative aspect-[3/2] w-full mb-8">
-          <Image
-            src={currentPoem.image || FALLBACK_IMAGE}
-            alt={currentPoem.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 800px"
-            priority
-            className="object-cover rounded-lg"
-          />
-        </div>
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">{currentPoem.title}</h2>
-          <div className="whitespace-pre-wrap font-serif text-lg">
-            {currentPoem.content}
-          </div>
-        </div>
-        <div className="flex justify-between mt-8">
-          <button
-            type="button"
-            onClick={handlePrevious}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
-          >
-            前のページ
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={currentPage === poems.length}
-            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
-          >
-            次のページ
-          </button>
+      <div className={styles.imageContainer}>
+        <Image
+          src={poem.image || FALLBACK_IMAGE}
+          alt={poem.title || ''}
+          fill
+          className={styles.image}
+          priority
+        />
+      </div>
+      <div 
+        className={styles.poemContainer}
+        ref={contentRef}
+        onScroll={handleScroll}
+      >
+        <h1 className={styles.title}>{poem.title}</h1>
+        <div className={styles.content}>
+          {poem.content.split('\n').map((line, index) => (
+            <div 
+              key={`${line.slice(0, 10)}-${index}`} 
+              className={styles.line}
+            >
+              {line}
+            </div>
+          ))}
         </div>
       </div>
+      <div className={styles.pageIndicator}>
+        {currentPage} / {totalPoems}
+      </div>
+      <>
+        {currentPage < totalPoems && (
+          <button 
+            onClick={handlePrevPage}
+            className={`${styles.navButton} ${styles.prevButton}`}
+            aria-label="前のページ"
+            type="button"
+          />
+        )}
+        {currentPage > 1 && (
+          <button 
+            onClick={handleNextPage}
+            className={`${styles.navButton} ${styles.nextButton}`}
+            aria-label="次のページ"
+            type="button"
+          />
+        )}
+      </>
     </div>
   );
 } 
