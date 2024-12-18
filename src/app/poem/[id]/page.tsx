@@ -3,15 +3,12 @@ import PoemPage from '@/components/PoemPage';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-interface PageParams {
-  id: string;
-}
+type PageProps = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-interface Props {
-  params: PageParams;
-}
-
-export default async function Page({ params }: Props) {
+export default async function Page({ params }: PageProps) {
   const id = Number.parseInt(params.id, 10);
   const totalPoems = await getTotalPoems();
 
@@ -35,7 +32,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  { params }: Props
+  { params }: PageProps
 ): Promise<Metadata> {
   const id = Number.parseInt(params.id, 10);
   const poem = await getPoem(id);
