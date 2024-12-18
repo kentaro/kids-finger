@@ -6,8 +6,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { TouchEvent } from 'react';
 import styles from './PoemViewer.module.css';
 import { Noto_Serif_JP } from 'next/font/google';
-import { useRouter } from 'next/navigation';
-import classNames from 'classnames';
 import Link from 'next/link';
 
 const notoSerifJP = Noto_Serif_JP({
@@ -23,12 +21,9 @@ export interface PoemViewerProps {
 }
 
 export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange }: PoemViewerProps) {
-  const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [showNavButtons, setShowNavButtons] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [hideScrollIndicator, setHideScrollIndicator] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -36,10 +31,6 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
   useEffect(() => {
     setCurrentPage(initialPage);
   }, [initialPage]);
-
-  if (!poem) {
-    return null;
-  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -53,6 +44,25 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPage, totalPoems, onPageChange]);
+
+  const handleScroll = useCallback(() => {
+    // スクロール処理
+  }, []);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    if (contentRef.current) {
+      contentRef.current.scrollLeft += e.deltaY;
+    }
+  }, []);
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (content) {
+      content.addEventListener('wheel', handleWheel, { passive: false });
+      return () => content.removeEventListener('wheel', handleWheel);
+    }
+  }, [handleWheel]);
 
   const handleTouchStart = (e: TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -92,33 +102,6 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
     }
   };
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setHideScrollIndicator(true);
-  }, []);
-
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    if (contentRef.current) {
-      contentRef.current.scrollLeft += e.deltaY;
-    }
-  }, []);
-
-  useEffect(() => {
-    const content = contentRef.current;
-    if (content) {
-      content.addEventListener('wheel', handleWheel, { passive: false });
-      return () => content.removeEventListener('wheel', handleWheel);
-    }
-  }, [handleWheel]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setHideScrollIndicator(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (contentRef.current) {
       setIsDragging(true);
@@ -144,6 +127,10 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
   const handleMouseLeave = () => {
     setIsDragging(false);
   };
+
+  if (!poem) {
+    return null;
+  }
 
   return (
     <section 

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Libre_Baskerville } from 'next/font/google';
 
 const libre = Libre_Baskerville({
@@ -10,12 +11,14 @@ export default function Home() {
   return (
     <Link href="/poem/1" className="block h-screen">
       <div className="relative h-full w-full">
-        <img
+        <Image
           src="/kids-finger/images/poems/cover.jpg"
           alt="背景画像"
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
+        <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4">
           <h1 
             className={`
@@ -32,8 +35,7 @@ export default function Home() {
             `}
             data-text="Kid's Finger"
           >
-            <span className="tracking-[0.15em]">Kid&apos;s</span>
-            <span className="tracking-[0.3em]"> Finger</span>
+            Kid&apos;s Finger
           </h1>
         </div>
       </div>
