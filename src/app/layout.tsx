@@ -10,6 +10,12 @@ const notoSerifJP = Noto_Serif_JP({
 export const metadata: Metadata = {
   title: "Kid's Finger",
   description: "詩のコレクション",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
