@@ -19,15 +19,26 @@ export default function PoemPage({ initialPoems }: { initialPoems: Poem[] }) {
     const newPage = params?.id ? Number.parseInt(params.id as string, 10) : 1;
     if (!Number.isNaN(newPage) && newPage >= 1 && newPage <= poems.length) {
       setCurrentPage(newPage);
+    } else {
+      router.push('/');
     }
-  }, [params?.id, poems.length]);
+  }, [params?.id, poems.length, router]);
 
-  if (Number.isNaN(currentPage) || currentPage < 1 || currentPage > poems.length) {
-    router.push('/');
+  useEffect(() => {
+    const currentPoem = poems[currentPage - 1];
+    if (!currentPoem) {
+      router.push('/');
+    }
+  }, [currentPage, poems, router]);
+
+  if (!currentPage) {
     return null;
   }
 
   const currentPoem = poems[currentPage - 1];
+  if (!currentPoem) {
+    return null;
+  }
   
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= poems.length) {

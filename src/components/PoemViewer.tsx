@@ -8,6 +8,7 @@ import styles from './PoemViewer.module.css';
 import { Noto_Serif_JP } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import classNames from 'classnames';
+import Link from 'next/link';
 
 const notoSerifJP = Noto_Serif_JP({
   subsets: ['latin'],
@@ -36,20 +37,22 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
     setCurrentPage(initialPage);
   }, [initialPage]);
 
+  if (!poem) {
+    return null;
+  }
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' && currentPage > 1) {
         onPageChange(currentPage - 1);
-        router.push(`/poem/${currentPage - 1}`);
       } else if (e.key === 'ArrowLeft' && currentPage < totalPoems) {
         onPageChange(currentPage + 1);
-        router.push(`/poem/${currentPage + 1}`);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, totalPoems, router, onPageChange]);
+  }, [currentPage, totalPoems, onPageChange]);
 
   const handleTouchStart = (e: TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -61,8 +64,6 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart - touchEnd;
 
-    // コンテンツが横スクロール可能で、まだ最後まで到達していない場合は
-    // ページ送りを行わない
     if (contentRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
       const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
@@ -71,29 +72,23 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
 
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentPage > 1) {
-        // 左スワイプ → 前のページ
         onPageChange(currentPage - 1);
-        router.push(`/poem/${currentPage - 1}`);
       } else if (diff < 0 && currentPage < totalPoems) {
-        // 右スワイプ → 次のページ
         onPageChange(currentPage + 1);
-        router.push(`/poem/${currentPage + 1}`);
       }
     }
     setTouchStart(null);
   };
 
   const handlePrevPage = () => {
-    if (currentPage < totalPoems) {
-      onPageChange(currentPage + 1);
-      router.push(`/poem/${currentPage + 1}`);
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
-      router.push(`/poem/${currentPage - 1}`);
+    if (currentPage < totalPoems) {
+      onPageChange(currentPage + 1);
     }
   };
 
@@ -160,7 +155,7 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
       <div className={styles.imageContainer}>
         <Image
           src={`/kids-finger/images/poems/${currentPage}.jpg`}
-          alt={poem.title || ''}
+          alt={poem.title}
           fill
           className={styles.image}
           priority
@@ -190,24 +185,29 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
       <div className={styles.pageIndicator}>
         {currentPage} / {totalPoems}
       </div>
-      <>
-        {currentPage < totalPoems && (
-          <button 
-            onClick={handlePrevPage}
-            className={`${styles.navButton} ${styles.prevButton}`}
-            aria-label="前のページ"
-            type="button"
-          />
-        )}
-        {currentPage > 1 && (
-          <button 
-            onClick={handleNextPage}
-            className={`${styles.navButton} ${styles.nextButton}`}
-            aria-label="次のページ"
-            type="button"
-          />
-        )}
-      </>
+      {currentPage > 1 && (
+        <button 
+          onClick={handlePrevPage}
+          className={`${styles.navButton} ${styles.prevButton}`}
+          aria-label="前のページ"
+          type="button"
+        />
+      )}
+      {currentPage < totalPoems && (
+        <button 
+          onClick={handleNextPage}
+          className={`${styles.navButton} ${styles.nextButton}`}
+          aria-label="次のページ"
+          type="button"
+        />
+      )}
+      <Link
+        href="/"
+        className={`${styles.homeButton} group`}
+        aria-label="トップページに戻る"
+      >
+        <span className="relative text-2xl text-white md:text-xl">⌂</span>
+      </Link>
     </section>
   );
 } 

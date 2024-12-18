@@ -13,6 +13,7 @@ export async function getAllPoems(): Promise<Poem[]> {
 	const fileNames = fs.readdirSync(POEMS_DIRECTORY);
 	const poems = fileNames
 		.filter((fileName) => fileName.endsWith(".md"))
+		.sort()
 		.map((fileName) => {
 			const fullPath = path.join(POEMS_DIRECTORY, fileName);
 			const fileContents = fs.readFileSync(fullPath, "utf8");
