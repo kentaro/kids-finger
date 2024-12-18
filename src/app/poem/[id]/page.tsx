@@ -3,10 +3,31 @@ import PoemPage from '@/components/PoemPage';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-type PageProps = {
+interface GenerateMetadataProps {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+}
+
+export async function generateMetadata(
+  { params }: GenerateMetadataProps
+): Promise<Metadata> {
+  const id = Number.parseInt(params.id, 10);
+  const poem = await getPoem(id);
+
+  if (!poem) {
+    return {
+      title: 'Not Found',
+    };
+  }
+
+  return {
+    title: `${poem.title}`,
+    description: poem.content.slice(0, 100),
+  };
+}
+
+interface PageProps {
+  params: { id: string };
+}
 
 export default async function Page({ params }: PageProps) {
   const id = Number.parseInt(params.id, 10);
@@ -29,22 +50,4 @@ export async function generateStaticParams() {
   return Array.from({ length: totalPoems }, (_, i) => ({
     id: String(i + 1),
   }));
-}
-
-export async function generateMetadata(
-  { params }: PageProps
-): Promise<Metadata> {
-  const id = Number.parseInt(params.id, 10);
-  const poem = await getPoem(id);
-
-  if (!poem) {
-    return {
-      title: 'Not Found',
-    };
-  }
-
-  return {
-    title: `${poem.title}`,
-    description: poem.content.slice(0, 100),
-  };
 } 

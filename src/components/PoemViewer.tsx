@@ -20,7 +20,12 @@ export interface PoemViewerProps {
   onPageChange: (page: number) => void;
 }
 
-export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange }: PoemViewerProps) {
+export default function PoemViewer({ 
+  poem, 
+  initialPage, 
+  totalPoems, 
+  onPageChange 
+}: PoemViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -127,10 +132,6 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
   const handleMouseLeave = () => {
     setIsDragging(false);
   };
-
-  if (!poem) {
-    return null;
-  }
 
   return (
     <section 

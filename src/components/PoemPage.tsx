@@ -7,7 +7,11 @@ import { useState, useEffect } from 'react';
 
 const PoemViewer = dynamic(() => import('@/components/PoemViewer'), { ssr: false });
 
-export default function PoemPage({ initialPoems }: { initialPoems: Poem[] }) {
+interface PoemPageProps {
+  initialPoems: Poem[];
+}
+
+export default function PoemPage({ initialPoems }: PoemPageProps) {
   const params = useParams();
   const router = useRouter();
   const [poems] = useState<Poem[]>(initialPoems);
