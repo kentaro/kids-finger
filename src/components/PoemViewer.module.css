@@ -5,6 +5,8 @@
   padding: 0;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .imageContainer {
@@ -149,9 +151,22 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+
+  .imageContainer {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+
   .poemContainer {
     width: 90%;
-    padding: 4rem 3rem;
+    padding: 3rem 2rem;
+    max-height: 70vh;
+    max-height: 70dvh;
+    position: fixed;
   }
 
   .title {
