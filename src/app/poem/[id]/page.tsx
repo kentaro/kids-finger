@@ -34,10 +34,18 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const poems = await getAllPoems();
-  const page = Number.parseInt(params.id, 10);
-  const poem = poems[page - 1];
+export async function generateMetadata(
+  { params }: Props
+): Promise<Metadata> {
+  const id = Number.parseInt(params.id, 10);
+  const poem = await getPoem(id);
+
+  if (!poem) {
+    return {
+      title: 'Not Found - Web詩集',
+      description: 'Page not found',
+    };
+  }
 
   return {
     title: `${poem.title} - Web詩集`,
