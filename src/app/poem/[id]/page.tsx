@@ -1,4 +1,4 @@
-import { getAllPoems, getPoem, getTotalPoems } from '@/lib/poems';
+import { getPoem, getTotalPoems } from '@/lib/poems';
 import PoemPage from '@/components/PoemPage';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -42,13 +42,12 @@ export async function generateMetadata(
 
   if (!poem) {
     return {
-      title: 'Not Found - Web詩集',
-      description: 'Page not found',
+      title: 'Not Found',
     };
   }
 
   return {
-    title: `${poem.title} - Web詩集`,
-    description: poem.title,
+    title: `${poem.title}`,
+    description: poem.content.slice(0, 100),
   };
 } 
