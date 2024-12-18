@@ -28,6 +28,9 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
   const [showNavButtons, setShowNavButtons] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [hideScrollIndicator, setHideScrollIndicator] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
     setCurrentPage(initialPage);
@@ -121,6 +124,32 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
     return () => clearTimeout(timer);
   }, []);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (contentRef.current) {
+      setIsDragging(true);
+      setStartX(e.pageX - contentRef.current.offsetLeft);
+      setScrollLeft(contentRef.current.scrollLeft);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    if (contentRef.current) {
+      const x = e.pageX - contentRef.current.offsetLeft;
+      const walk = (x - startX) * 2;
+      contentRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
   return (
     <section 
       className={`${styles.container} ${notoSerifJP.className}`}
@@ -141,6 +170,10 @@ export default function PoemViewer({ poem, initialPage, totalPoems, onPageChange
         className={styles.poemContainer}
         ref={contentRef}
         onScroll={handleScroll}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       >
         <h1 className={styles.title}>{poem.title}</h1>
         <div className={styles.content}>

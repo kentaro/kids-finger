@@ -1,22 +1,40 @@
-import { getAllPoems } from '@/lib/poems';
+import { getAllPoems, getPoem, getTotalPoems } from '@/lib/poems';
 import PoemPage from '@/components/PoemPage';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
-// 静的ページ生成のためのパラメータを定義
+interface PageParams {
+  id: string;
+}
+
+interface Props {
+  params: PageParams;
+}
+
+export default async function Page({ params }: Props) {
+  const id = Number.parseInt(params.id, 10);
+  const totalPoems = await getTotalPoems();
+
+  if (Number.isNaN(id) || id < 1 || id > totalPoems) {
+    notFound();
+  }
+
+  const poem = await getPoem(id);
+  if (!poem) {
+    notFound();
+  }
+
+  return <PoemPage initialPoems={[poem]} />;
+}
+
 export async function generateStaticParams() {
-  const poems = await getAllPoems();
-  return poems.map((_, index) => ({
-    id: (index + 1).toString(),
+  const totalPoems = await getTotalPoems();
+  return Array.from({ length: totalPoems }, (_, i) => ({
+    id: String(i + 1),
   }));
 }
 
-// ページコンポーネント
-export default async function Page() {
-  const poems = await getAllPoems();
-  return <PoemPage initialPoems={poems} />;
-}
-
-// メタデータの設定
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const poems = await getAllPoems();
   const page = Number.parseInt(params.id, 10);
   const poem = poems[page - 1];

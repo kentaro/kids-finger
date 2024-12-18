@@ -1,57 +1,49 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import matter from 'gray-matter';
+import fs from "node:fs";
+import path from "node:path";
+import matter from "gray-matter";
 
 export interface Poem {
-  id: string;
-  title: string;
-  content: string;
-  image: string;
+	title: string;
+	content: string;
 }
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&h=600&fit=crop';
+const POEMS_DIRECTORY = path.join(process.cwd(), "content/poems");
 
-export function getAllPoems(): Poem[] {
-  try {
-    const poemsDirectory = join(process.cwd(), 'content/poems');
-    console.log('Reading poems from directory:', poemsDirectory);
-    
-    const filenames = readdirSync(poemsDirectory);
-    console.log('Found files:', filenames);
-    
-    return filenames
-      .filter(filename => filename.endsWith('.md'))
-      .map(filename => {
-        const filePath = join(poemsDirectory, filename);
-        const fileContents = readFileSync(filePath, 'utf8');
-        const { data, content } = matter(fileContents);
-        
-        const poem = {
-          id: filename.replace('.md', ''),
-          title: data.title || '無題',
-          content: content.trim(),
-          image: data.image || FALLBACK_IMAGE,
-        };
-        console.log('Parsed poem:', poem);
-        return poem;
-      })
-      .sort((a, b) => a.id.localeCompare(b.id));
-  } catch (error) {
-    console.error('Error loading poems:', error);
-    return [];
-  }
+export async function getAllPoems(): Promise<Poem[]> {
+	const fileNames = fs.readdirSync(POEMS_DIRECTORY);
+	const poems = fileNames
+		.filter((fileName) => fileName.endsWith(".md"))
+		.map((fileName) => {
+			const fullPath = path.join(POEMS_DIRECTORY, fileName);
+			const fileContents = fs.readFileSync(fullPath, "utf8");
+			const { data, content } = matter(fileContents);
+
+			return {
+				title: data.title || "",
+				content: content,
+			};
+		});
+
+	return poems;
 }
 
-export function getPoemById(id: string): Poem | undefined {
-  try {
-    console.log('Looking for poem with id:', id);
-    const poems = getAllPoems();
-    console.log('Available poems:', poems.map(p => ({ id: p.id, title: p.title })));
-    const poem = poems.find(poem => poem.id === id);
-    console.log('Found poem:', poem);
-    return poem;
-  } catch (error) {
-    console.error('Error getting poem by id:', error);
-    return undefined;
-  }
-} 
+export async function getPoem(id: number): Promise<Poem | null> {
+	try {
+		const fileName = `${String(id).padStart(3, "0")}.md`;
+		const fullPath = path.join(POEMS_DIRECTORY, fileName);
+		const fileContents = fs.readFileSync(fullPath, "utf8");
+		const { data, content } = matter(fileContents);
+
+		return {
+			title: data.title || "",
+			content: content,
+		};
+	} catch {
+		return null;
+	}
+}
+
+export async function getTotalPoems(): Promise<number> {
+	const fileNames = fs.readdirSync(POEMS_DIRECTORY);
+	return fileNames.filter((fileName) => fileName.endsWith(".md")).length;
+}
