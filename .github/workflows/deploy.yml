@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+# GitHub Pagesへの書き込み権限を追加
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
