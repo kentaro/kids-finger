@@ -241,25 +241,31 @@
 
   .poemContainer {
     position: fixed;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 85%;
-    padding: 1.5rem;
+    padding: 2.0rem 1.5rem;
     max-height: 65vh;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content {
+    -webkit-overflow-scrolling: touch;
   }
 
   .title {
-    font-size: 1.2rem;
-    margin-left: 0.8rem;
-    padding-right: 0.5rem;
+    font-size: 1.8rem;
+    margin-left: 1rem;
+    padding-right: 0.8rem;
     line-height: 1.8;
   }
 
   .line {
-    font-size: 0.95rem;
+    font-size: 1.4rem;
     line-height: 1.8;
-    margin-left: 0.6rem;
+    margin-left: 0.8rem;
     letter-spacing: 0.1em;
   }
 
