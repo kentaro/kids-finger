@@ -35,6 +35,7 @@ export default function PoemViewer({
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [shouldFadeOut, setShouldFadeOut] = useState(false);
 
   const handleScroll = useCallback(() => {
     // スクロールによるページ送りを無効化
@@ -60,6 +61,15 @@ export default function PoemViewer({
       return () => content.removeEventListener('wheel', handleWheel);
     }
   }, [handleWheel]);
+
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      const timer = setTimeout(() => {
+        setShouldFadeOut(true);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => {
@@ -158,7 +168,9 @@ export default function PoemViewer({
       <div className={styles.pageIndicator}>
         {currentPage} / {totalPoems}
       </div>
-      <div className={styles.swipeIndicator} />
+      <div className={`${styles.swipeIndicator} ${shouldFadeOut ? styles.fadeOut : ''}`}>
+        <i className="fa-solid fa-hand-pointer" />
+      </div>
       {prevPoem && currentPage > 1 && (
         <button 
           onClick={handlePrevPage}

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Serif_JP } from 'next/font/google';
+import Script from 'next/script';
 import "./globals.css";
 
 const notoSerifJP = Noto_Serif_JP({
@@ -28,7 +29,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={notoSerifJP.className}>
-      <body>{children}</body>
+      <head>
+        <link 
+          rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+      </head>
+      <body>
+        {children}
+        <Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" strategy="afterInteractive" />
+      </body>
     </html>
   );
 }
