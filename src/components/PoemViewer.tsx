@@ -3,11 +3,11 @@
 import type { Poem } from '@/lib/poems';
 import Image from 'next/image';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { TouchEvent } from 'react';
 import styles from './PoemViewer.module.css';
 import { Noto_Serif_JP } from 'next/font/google';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useSwipeable } from 'react-swipeable';
 
 const notoSerifJP = Noto_Serif_JP({
   subsets: ['latin'],
@@ -32,35 +32,13 @@ export default function PoemViewer({
   const params = useParams();
   const currentPage = params?.id ? Number.parseInt(params.id as string, 10) : 1;
   const contentRef = useRef<HTMLDivElement>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' && currentPage > 1) {
-        onPageChange(currentPage - 1);
-      } else if (e.key === 'ArrowRight' && currentPage < totalPoems) {
-        onPageChange(currentPage + 1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, totalPoems, onPageChange]);
-
   const handleScroll = useCallback(() => {
-    if (window.innerWidth <= 768 && contentRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
-      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-      if (isAtEnd && currentPage < totalPoems) {
-        onPageChange(currentPage + 1);
-      } else if (scrollLeft <= 10 && currentPage > 1) {
-        onPageChange(currentPage - 1);
-      }
-    }
-  }, [currentPage, totalPoems, onPageChange]);
+    // スクロールによるページ送りを無効化
+  }, []);
 
   const handleWheel = useCallback((e: WheelEvent) => {
     if (window.innerWidth <= 768) {
@@ -83,45 +61,23 @@ export default function PoemViewer({
     }
   }, [handleWheel]);
 
-  const handleTouchStart = (e: TouchEvent) => {
-    if (e.touches.length === 1) {
-      setTouchStart(e.touches[0].clientX);
-      setStartX(e.touches[0].clientX);
-    }
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!touchStart) return;
-    e.preventDefault();
-  };
-
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (!touchStart) return;
-
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-
-    if (Math.abs(diff) > 30) {
-      if (diff < 0 && currentPage < totalPoems) {
-        onPageChange(currentPage + 1);
-      } else if (diff > 0 && currentPage > 1) {
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (currentPage > 1) {
         onPageChange(currentPage - 1);
       }
-    }
-    setTouchStart(null);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1 && prevPoem) {
-      onPageChange(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPoems && nextPoem) {
-      onPageChange(currentPage + 1);
-    }
-  };
+    },
+    onSwipedRight: () => {
+      if (currentPage < totalPoems) {
+        onPageChange(currentPage + 1);
+      }
+    },
+    preventScrollOnSwipe: true,
+    trackMouse: false,
+    trackTouch: true,
+    delta: 10,
+    swipeDuration: 500,
+  });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (contentRef.current) {
@@ -149,15 +105,27 @@ export default function PoemViewer({
     setIsDragging(false);
   };
 
+  const handlePrevPage = () => {
+    if (currentPage > 1 && prevPoem) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPoems && nextPoem) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
   return (
     <section 
       className={`${styles.container} ${notoSerifJP.className}`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       aria-label="詩の表示エリア"
     >
-      <div className={styles.imageContainer}>
+      <div 
+        className={styles.imageContainer}
+        {...swipeHandlers}
+      >
         <Image
           src={`/kids-finger/images/poems/${currentPage}.jpg`}
           alt={poem.title}

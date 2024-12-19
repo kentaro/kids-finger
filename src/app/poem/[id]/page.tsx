@@ -42,8 +42,8 @@ export default async function Page({
   const nextId = id < totalPoems ? id + 1 : null;
 
   const [prevPoem, nextPoem] = await Promise.all([
-    prevId ? getPoem(prevId) : null,
-    nextId ? getPoem(nextId) : null,
+    prevId ? getPoem(prevId) : Promise.resolve(null),
+    nextId ? getPoem(nextId) : Promise.resolve(null),
   ]);
 
   return (

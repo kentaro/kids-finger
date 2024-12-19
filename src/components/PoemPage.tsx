@@ -3,6 +3,7 @@
 import type { Poem } from '@/lib/poems';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { useCallback, useTransition } from 'react';
 
 const PoemViewer = dynamic(() => import('@/components/PoemViewer'), { ssr: false });
 
@@ -20,12 +21,15 @@ export default function PoemPage({
   totalPoems 
 }: PoemPageProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPoems) {
-      router.push(`/poem/${page}`);
+  const handlePageChange = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPoems && !isPending) {
+      startTransition(() => {
+        router.push(`/poem/${page}`, { scroll: false });
+      });
     }
-  };
+  }, [router, totalPoems, isPending]);
 
   return (
     <div className="min-h-screen">
