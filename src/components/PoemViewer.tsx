@@ -84,7 +84,15 @@ export default function PoemViewer({
   }, [handleWheel]);
 
   const handleTouchStart = (e: TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
+    if (e.touches.length === 1) {
+      setTouchStart(e.touches[0].clientX);
+      setStartX(e.touches[0].clientX);
+    }
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!touchStart) return;
+    e.preventDefault();
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
@@ -93,7 +101,7 @@ export default function PoemViewer({
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart - touchEnd;
 
-    if (Math.abs(diff) > 50) {
+    if (Math.abs(diff) > 30) {
       if (diff < 0 && currentPage < totalPoems) {
         onPageChange(currentPage + 1);
       } else if (diff > 0 && currentPage > 1) {
@@ -145,6 +153,7 @@ export default function PoemViewer({
     <section 
       className={`${styles.container} ${notoSerifJP.className}`}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       aria-label="詩の表示エリア"
     >

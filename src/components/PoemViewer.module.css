@@ -11,6 +11,9 @@
   align-items: center;
   justify-content: center;
   background-color: #000;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .imageContainer {
@@ -237,6 +240,7 @@
   .container {
     height: 100dvh;
     height: -webkit-fill-available;
+    overscroll-behavior: none;
   }
 
   .poemContainer {
@@ -249,6 +253,7 @@
     max-height: 65vh;
     touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: none;
   }
 
   .content {
