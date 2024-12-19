@@ -33,12 +33,27 @@ export default async function Page({
     notFound();
   }
 
-  const poem = await getPoem(id);
-  if (!poem) {
+  const currentPoem = await getPoem(id);
+  if (!currentPoem) {
     notFound();
   }
 
-  return <PoemPage initialPoems={[poem]} />;
+  const prevId = id > 1 ? id - 1 : null;
+  const nextId = id < totalPoems ? id + 1 : null;
+
+  const [prevPoem, nextPoem] = await Promise.all([
+    prevId ? getPoem(prevId) : null,
+    nextId ? getPoem(nextId) : null,
+  ]);
+
+  return (
+    <PoemPage 
+      currentPoem={currentPoem}
+      prevPoem={prevPoem}
+      nextPoem={nextPoem}
+      totalPoems={totalPoems}
+    />
+  );
 }
 
 export async function generateStaticParams() {

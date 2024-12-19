@@ -2,51 +2,27 @@
 
 import type { Poem } from '@/lib/poems';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const PoemViewer = dynamic(() => import('@/components/PoemViewer'), { ssr: false });
 
 interface PoemPageProps {
-  initialPoems: Poem[];
+  currentPoem: Poem;
+  prevPoem: Poem | null;
+  nextPoem: Poem | null;
+  totalPoems: number;
 }
 
-export default function PoemPage({ initialPoems }: PoemPageProps) {
-  const params = useParams();
+export default function PoemPage({ 
+  currentPoem,
+  prevPoem,
+  nextPoem,
+  totalPoems 
+}: PoemPageProps) {
   const router = useRouter();
-  const [poems] = useState<Poem[]>(initialPoems);
-  const [currentPage, setCurrentPage] = useState<number>(
-    params?.id ? Number.parseInt(params.id as string, 10) : 1
-  );
 
-  useEffect(() => {
-    const newPage = params?.id ? Number.parseInt(params.id as string, 10) : 1;
-    if (!Number.isNaN(newPage) && newPage >= 1 && newPage <= poems.length) {
-      setCurrentPage(newPage);
-    } else {
-      router.push('/');
-    }
-  }, [params?.id, poems.length, router]);
-
-  useEffect(() => {
-    const currentPoem = poems[currentPage - 1];
-    if (!currentPoem) {
-      router.push('/');
-    }
-  }, [currentPage, poems, router]);
-
-  if (!currentPage) {
-    return null;
-  }
-
-  const currentPoem = poems[currentPage - 1];
-  if (!currentPoem) {
-    return null;
-  }
-  
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= poems.length) {
-      setCurrentPage(page);
+    if (page >= 1 && page <= totalPoems) {
       router.push(`/poem/${page}`);
     }
   };
@@ -54,9 +30,10 @@ export default function PoemPage({ initialPoems }: PoemPageProps) {
   return (
     <div className="min-h-screen">
       <PoemViewer 
-        poem={currentPoem} 
-        initialPage={currentPage} 
-        totalPoems={poems.length}
+        poem={currentPoem}
+        prevPoem={prevPoem}
+        nextPoem={nextPoem}
+        totalPoems={totalPoems}
         onPageChange={handlePageChange}
       />
     </div>

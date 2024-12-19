@@ -7,6 +7,7 @@ import type { TouchEvent } from 'react';
 import styles from './PoemViewer.module.css';
 import { Noto_Serif_JP } from 'next/font/google';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 const notoSerifJP = Noto_Serif_JP({
   subsets: ['latin'],
@@ -15,33 +16,32 @@ const notoSerifJP = Noto_Serif_JP({
 
 export interface PoemViewerProps {
   poem: Poem;
-  initialPage: number;
+  prevPoem: Poem | null;
+  nextPoem: Poem | null;
   totalPoems: number;
   onPageChange: (page: number) => void;
 }
 
 export default function PoemViewer({ 
   poem, 
-  initialPage, 
+  prevPoem,
+  nextPoem,
   totalPoems, 
   onPageChange 
 }: PoemViewerProps) {
+  const params = useParams();
+  const currentPage = params?.id ? Number.parseInt(params.id as string, 10) : 1;
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(initialPage);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
-    setCurrentPage(initialPage);
-  }, [initialPage]);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' && currentPage > 1) {
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
         onPageChange(currentPage - 1);
-      } else if (e.key === 'ArrowLeft' && currentPage < totalPoems) {
+      } else if (e.key === 'ArrowRight' && currentPage < totalPoems) {
         onPageChange(currentPage + 1);
       }
     };
@@ -51,8 +51,16 @@ export default function PoemViewer({
   }, [currentPage, totalPoems, onPageChange]);
 
   const handleScroll = useCallback(() => {
-    // スクロール処理
-  }, []);
+    if (contentRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+      if (isAtEnd && currentPage < totalPoems) {
+        onPageChange(currentPage + 1);
+      } else if (scrollLeft <= 10 && currentPage > 1) {
+        onPageChange(currentPage - 1);
+      }
+    }
+  }, [currentPage, totalPoems, onPageChange]);
 
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
@@ -79,30 +87,24 @@ export default function PoemViewer({
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart - touchEnd;
 
-    if (contentRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
-      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-      if (!isAtEnd && scrollWidth > clientWidth) return;
-    }
-
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentPage > 1) {
-        onPageChange(currentPage - 1);
-      } else if (diff < 0 && currentPage < totalPoems) {
+      if (diff > 0 && currentPage < totalPoems) {
         onPageChange(currentPage + 1);
+      } else if (diff < 0 && currentPage > 1) {
+        onPageChange(currentPage - 1);
       }
     }
     setTouchStart(null);
   };
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
+    if (currentPage > 1 && prevPoem) {
       onPageChange(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPoems) {
+    if (currentPage < totalPoems && nextPoem) {
       onPageChange(currentPage + 1);
     }
   };
@@ -173,19 +175,19 @@ export default function PoemViewer({
       <div className={styles.pageIndicator}>
         {currentPage} / {totalPoems}
       </div>
-      {currentPage > 1 && (
+      {prevPoem && currentPage > 1 && (
         <button 
           onClick={handlePrevPage}
           className={`${styles.navButton} ${styles.prevButton}`}
-          aria-label="前のページ"
+          aria-label={`前の詩：${prevPoem.title}`}
           type="button"
         />
       )}
-      {currentPage < totalPoems && (
+      {nextPoem && currentPage < totalPoems && (
         <button 
           onClick={handleNextPage}
           className={`${styles.navButton} ${styles.nextButton}`}
-          aria-label="次のページ"
+          aria-label={`次の詩：${nextPoem.title}`}
           type="button"
         />
       )}
