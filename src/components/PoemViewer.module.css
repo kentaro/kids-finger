@@ -28,7 +28,10 @@
 }
 
 .poemContainer {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
   padding: 2rem;
   font-family: "Noto Serif JP", serif;
@@ -232,11 +235,15 @@
 
 @media (max-width: 768px) {
   .container {
-    height: 100vh;
+    height: 100dvh;
     height: -webkit-fill-available;
   }
 
   .poemContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 85%;
     padding: 1.5rem;
     max-height: 65vh;

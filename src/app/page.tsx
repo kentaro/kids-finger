@@ -9,7 +9,7 @@ const libre = Libre_Baskerville({
 
 export default function Home() {
   return (
-    <Link href="/poem/1" className="block h-screen">
+    <Link href="/poem/1" className="fixed inset-0 w-full h-[100dvh]">
       <div className="relative h-full w-full">
         <Image
           src="/kids-finger/images/poems/cover.jpg"
