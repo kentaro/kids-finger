@@ -207,6 +207,10 @@
   font-size: 2rem;
 }
 
+.swipeIndicatorHidden {
+  display: none !important;
+}
+
 @keyframes swipe {
   0% { transform: translateX(-50%) translateX(-1rem); }
   50% { transform: translateX(-50%) translateX(1rem); }
