@@ -51,7 +51,7 @@ export default function PoemViewer({
   }, [currentPage, totalPoems, onPageChange]);
 
   const handleScroll = useCallback(() => {
-    if (contentRef.current) {
+    if (window.innerWidth <= 768 && contentRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = contentRef.current;
       const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
       if (isAtEnd && currentPage < totalPoems) {
@@ -63,15 +63,21 @@ export default function PoemViewer({
   }, [currentPage, totalPoems, onPageChange]);
 
   const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    if (contentRef.current) {
-      contentRef.current.scrollLeft += e.deltaY;
+    if (window.innerWidth <= 768) {
+      e.preventDefault();
+      if (contentRef.current) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          contentRef.current.scrollTop += e.deltaY;
+          return;
+        }
+        contentRef.current.scrollLeft += e.deltaX;
+      }
     }
   }, []);
 
   useEffect(() => {
     const content = contentRef.current;
-    if (content) {
+    if (content && window.innerWidth <= 768) {
       content.addEventListener('wheel', handleWheel, { passive: false });
       return () => content.removeEventListener('wheel', handleWheel);
     }
@@ -88,9 +94,9 @@ export default function PoemViewer({
     const diff = touchStart - touchEnd;
 
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentPage < totalPoems) {
+      if (diff < 0 && currentPage < totalPoems) {
         onPageChange(currentPage + 1);
-      } else if (diff < 0 && currentPage > 1) {
+      } else if (diff > 0 && currentPage > 1) {
         onPageChange(currentPage - 1);
       }
     }
@@ -175,6 +181,7 @@ export default function PoemViewer({
       <div className={styles.pageIndicator}>
         {currentPage} / {totalPoems}
       </div>
+      <div className={styles.swipeIndicator} />
       {prevPoem && currentPage > 1 && (
         <button 
           onClick={handlePrevPage}
