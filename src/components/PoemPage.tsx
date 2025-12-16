@@ -1,11 +1,9 @@
-'use client';
+"use client";
 
-import type { Poem } from '@/lib/poems';
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
-import { useCallback, useTransition } from 'react';
-
-const PoemViewer = dynamic(() => import('@/components/PoemViewer'), { ssr: false });
+import type { Poem } from "@/lib/poems";
+import PoemViewer from "@/components/PoemViewer";
+import { useRouter } from "next/navigation";
+import { useCallback, useTransition } from "react";
 
 interface PoemPageProps {
   currentPoem: Poem;
@@ -14,26 +12,29 @@ interface PoemPageProps {
   totalPoems: number;
 }
 
-export default function PoemPage({ 
+export default function PoemPage({
   currentPoem,
   prevPoem,
   nextPoem,
-  totalPoems 
+  totalPoems,
 }: PoemPageProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const handlePageChange = useCallback((page: number) => {
-    if (page >= 1 && page <= totalPoems && !isPending) {
-      startTransition(() => {
-        router.push(`/poem/${page}`, { scroll: false });
-      });
-    }
-  }, [router, totalPoems, isPending]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1 && page <= totalPoems && !isPending) {
+        startTransition(() => {
+          router.push(`/poem/${page}`, { scroll: false });
+        });
+      }
+    },
+    [router, totalPoems, isPending]
+  );
 
   return (
     <div className="min-h-screen">
-      <PoemViewer 
+      <PoemViewer
         poem={currentPoem}
         prevPoem={prevPoem}
         nextPoem={nextPoem}
@@ -42,4 +43,4 @@ export default function PoemPage({
       />
     </div>
   );
-} 
+}

@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Serif_JP } from 'next/font/google';
-import Script from 'next/script';
+import { notoSerifJP } from "@/lib/fonts";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import "./globals.css";
 
-const notoSerifJP = Noto_Serif_JP({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-});
+// Font Awesome の自動CSSインジェクションを無効化（Next.jsではスタイルを手動でインポート）
+config.autoAddCss = false;
 
 export const metadata: Metadata = {
   title: "Kid's Finger",
@@ -14,12 +13,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   minimumScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: 'cover',
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -29,18 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={notoSerifJP.className}>
-      <head>
-        <link 
-          rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-        />
-      </head>
-      <body>
-        {children}
-        <Script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" strategy="afterInteractive" />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

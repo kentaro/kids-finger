@@ -1,17 +1,20 @@
-import { getPoem, getTotalPoems } from '@/lib/poems';
-import PoemPage from '@/components/PoemPage';
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
+import { getPoem, getTotalPoems } from "@/lib/poems";
+import PoemPage from "@/components/PoemPage";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
-export async function generateMetadata(
-  { params }: { params: { id: string } }
-): Promise<Metadata> {
-  const id = Number.parseInt(params.id, 10);
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id: idParam } = await params;
+  const id = Number.parseInt(idParam, 10);
   const poem = await getPoem(id);
 
   if (!poem) {
     return {
-      title: 'Not Found',
+      title: "Not Found",
     };
   }
 
@@ -21,12 +24,9 @@ export async function generateMetadata(
   };
 }
 
-export default async function Page({ 
-  params,
-}: { 
-  params: { id: string } 
-}) {
-  const id = Number.parseInt(params.id, 10);
+export default async function Page({ params }: Props) {
+  const { id: idParam } = await params;
+  const id = Number.parseInt(idParam, 10);
   const totalPoems = await getTotalPoems();
 
   if (Number.isNaN(id) || id < 1 || id > totalPoems) {
@@ -47,7 +47,7 @@ export default async function Page({
   ]);
 
   return (
-    <PoemPage 
+    <PoemPage
       currentPoem={currentPoem}
       prevPoem={prevPoem}
       nextPoem={nextPoem}
@@ -61,4 +61,4 @@ export async function generateStaticParams() {
   return Array.from({ length: totalPoems }, (_, i) => ({
     id: String(i + 1),
   }));
-} 
+}
