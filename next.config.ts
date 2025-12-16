@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
-const isProd = process.env.NODE_ENV === "production";
-const basePath = isProd ? "/kids-finger" : "";
+const basePath = "/kids-finger";
 
 const nextConfig: NextConfig = {
   output: "export",
@@ -9,7 +8,10 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   basePath,
-  assetPrefix: basePath ? `${basePath}/` : undefined,
+  assetPrefix: `${basePath}/`,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
 };
 
 export default nextConfig;
