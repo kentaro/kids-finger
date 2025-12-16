@@ -7,7 +7,7 @@ export default function Home() {
     <Link href="/poem/1" className="fixed inset-0 w-full h-[100dvh]">
       <div className="relative h-full w-full">
         <Image
-          src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/poems/cover.jpg`}
+          src="/kids-finger/images/poems/cover.jpg"
           alt="Kid's Finger 表紙"
           fill
           className="object-cover"

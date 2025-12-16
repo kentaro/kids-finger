@@ -78,7 +78,7 @@ export default function PoemViewer({
     >
       <div className={styles.imageContainer} {...swipeHandlers}>
         <Image
-          src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/poems/${currentPage}.jpg`}
+          src={`/kids-finger/images/poems/${currentPage}.jpg`}
           alt={poem.title}
           fill
           className={styles.image}
